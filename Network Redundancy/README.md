@@ -12,6 +12,14 @@ sudo firewall-cmd --add-port=80/tcp --permanent
 firewall-cmd --reload
 ```
 
+```bash
+sudo yum -y install epel-release
+sudo yum -y install google-authenticator
+google-authenticator
+
+sudo vi /etc/pam.d/sshd
+```
+
 ## config1.txt
 configurations for vyos1 after project 1
 
