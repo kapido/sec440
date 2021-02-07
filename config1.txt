@@ -1,0 +1,142 @@
+high-availability {
+    vrrp {
+        group langroup1 {
+            interface eth1
+            virtual-address 10.0.5.10/24
+            vrid 10
+        }
+        group optgroup1 {
+            interface eth2
+            virtual-address 10.0.6.1/24
+            vrid 10
+        }
+        group wangroup10 {
+            interface eth0
+            virtual-address 10.0.17.80/24
+            vrid 160
+        }
+    }
+}
+interfaces {
+    ethernet eth0 {
+        address 10.0.17.20/24
+        description WAN
+        hw-id 00:50:56:b3:51:cb
+    }
+    ethernet eth1 {
+        address 10.0.5.2/24
+        description LAN
+        hw-id 00:50:56:b3:33:d4
+    }
+    ethernet eth2 {
+        address 10.0.6.2/24
+        description OPT
+        hw-id 00:50:56:b3:3a:10
+    }
+    loopback lo {
+    }
+}
+nat {
+    destination {
+        rule 100 {
+            description web
+            destination {
+                port 80
+            }
+            inbound-interface eth0
+            protocol tcp
+            translation {
+                address 10.0.5.100
+            }
+        }
+        rule 150 {
+            destination {
+                port 22
+            }
+            inbound-interface eth0
+            protocol tcp
+            translation {
+                address 10.0.5.100
+            }
+        }
+    }
+    source {
+        rule 100 {
+            outbound-interface eth0
+            source {
+                address 10.0.5.0/24
+            }
+            translation {
+                address masquerade
+            }
+        }
+        rule 150 {
+            outbound-interface eth0
+            source {
+                address 10.0.6.0/24
+            }
+            translation {
+                address masquerade
+            }
+        }
+    }
+}
+protocols {
+    static {
+        route 0.0.0.0/0 {
+            next-hop 10.0.17.2 {
+            }
+        }
+    }
+}
+service {
+    dns {
+        forwarding {
+            allow-from 10.0.5.0/24
+            allow-from 10.0.6.0/24
+            listen-address 10.0.5.2
+            listen-address 10.0.6.2
+        }
+    }
+    ssh {
+        listen-address 0.0.0.0
+    }
+}
+system {
+    config-management {
+        commit-revisions 100
+    }
+    console {
+        device ttyS0 {
+            speed 115200
+        }
+    }
+    host-name VYOS1
+    login {
+        user vyos {
+            authentication {
+                encrypted-password ****************
+                plaintext-password ****************
+            }
+        }
+    }
+    name-server 10.0.17.2
+    ntp {
+        server 0.pool.ntp.org {
+        }
+        server 1.pool.ntp.org {
+        }
+        server 2.pool.ntp.org {
+        }
+    }
+    syslog {
+        global {
+            facility all {
+                level info
+            }
+            facility protocols {
+                level debug
+            }
+        }
+    }
+}
